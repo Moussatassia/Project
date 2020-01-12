@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_employee_transfer_filter" model="ir.ui.view">
+        <field name="name">Transfert d'employé</field>
+        <field name="model">employee.transfer</field>
+        <field name="arch" type="xml">
+            <search string="Transfert d\'employé">
+                <field name="name" string="Employé" filter_domain="['|','|', ('name','ilike',self), ('name', 'ilike', self), ('employee_id', 'child_of', self)]"/>
+                <filter name="draft" string="Draft" domain="[('state','=','draft')]"/>
+                <filter name="transfer" string="Transferé" domain="[('state', '=', 'transfer')]"/>
+                <filter name="done" string="Done" domain="[('state', '=', 'done')]"/>
+                <separator/>
+                <field name="employee_id" string="Employé"/>
+                <separator/>
+                <separator/>
+                <separator/>
+                    <!--<group expand="0" string="Group By">-->
+                        <!--<filter string="Employee" context="{'group_by':'employee_id'}"/>-->
+                        <!--<filter name="status" string="Status" context="{'group_by':'state'}"/>-->
+                        <!--<separator/>-->
+                    <!--</group>-->
+           </search>
+        </field>
+    </record>
+
+    <record id="employee_transfer" model="ir.ui.view">
+        <field name="name">Transfert d\'employé</field>
+        <field name="model">employee.transfer</field>
+        <field name="arch" type="xml">
+            <form string="Transfert d'employé">
+                <header>
+                    <button name="transfer" string="Transfert" class="oe_highlight" type="object" states="draft"
+                    groups="hr.group_hr_manager"/>
+                    <button name="receive_employee" string="Receive" class="oe_highlight" type="object"
+                            groups="hr.group_hr_manager" attrs="{'invisible' : [('transferred', '=', False)]}"/>
+                    <button name="cancel_transfer" string="Annule" type="object"
+                        attrs="{'invisible':[('state','in',('draft', 'cancel'))]}" groups="hr.group_hr_manager"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,transfer,done" />
+                </header>
+                <sheet>
+                    <div class="oe_title oe_left">
+                        <h2>
+                            <field name="name" class="oe_inline" placeholder="Name"/>
+                        </h2>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id" options="{'no_create': True}" attrs="{'readonly' : [('state', '!=', 'draft')] }"/>
+                            <field name="date" attrs="{'readonly' : [('state', '!=', 'draft')] }"/>
+                            <field name="transferred" invisible="1"/>
+                            <field name="branch" groups="base.group_multi_company" options="{'no_create': True}"
+                            attrs="{'readonly' : [('state', '!=', 'draft')] }"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                            <field name="responsible" options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                    <notebook colspan="4">
+                        <page string="Internal Notes" >
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="employee_transfer_tree" model="ir.ui.view">
+        <field name="name">Transfert d'employé Tree</field>
+        <field name="model">employee.transfer</field>
+        <field name="arch" type="xml">
+            <tree string="Transfert d'employé" decoration-info="state == 'draft'" decoration-muted="state in ('done','cancel')">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="branch" groups="base.group_multi_company"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_employee_transfer" model="ir.actions.act_window">
+        <field name="name">Transfert</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">employee.transfer</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" eval="False"/>
+        <field name="domain">[]</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to create a new Employee Transfer.
+            </p><p>
+                Use this menu to browse previous transfer. To record new
+                transfer, you may use the create button.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_employee_transfer"
+              name="Transferts"
+              sequence="10"
+              action="action_employee_transfer"
+              web_icon="hr_leave_request_aliasing,static/description/transfer_icon.png"
+              groups="hr.group_hr_manager"/>
+</odoo>
